@@ -9,6 +9,7 @@
     --font: "Helvetica World", "Helvetica Neue", Helvetica, Arial, sans-serif;
     --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-expo: cubic-bezier(0.87, 0, 0.13, 1);
     --dur-fast: 0.2s;
     --dur-med: 0.35s;
     --dur-slow: 0.55s;
@@ -48,13 +49,90 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* ─── LOGIN PAGE ─── */
+  /* ══════════════════════════════════════
+     REVISION 1 — PAGE TRANSITION OVERLAY
+  ══════════════════════════════════════ */
+  #transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Brand-colored curtain that sweeps across the screen */
+  .t-curtain {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0a0acc 0%, #1a1aff 50%, #3a0ca3 100%);
+    transform: translateX(-101%);
+    transition: transform 0.6s var(--ease-expo);
+    will-change: transform;
+  }
+
+  /* Centered content shown while curtain covers the screen */
+  .t-center {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.28s ease, transform 0.38s var(--ease-out-soft);
+    pointer-events: none;
+  }
+
+  .t-brand-name {
+    font-family: var(--font);
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: -0.01em;
+  }
+
+  .t-spinner {
+    width: 34px; height: 34px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: t-spin 0.8s linear infinite;
+  }
+
+  @keyframes t-spin { to { transform: rotate(360deg); } }
+
+  /* State: IN — curtain covers everything */
+  #transition-overlay.state-in .t-curtain  { transform: translateX(0); }
+  #transition-overlay.state-in .t-center   {
+    opacity: 1;
+    transform: scale(1);
+    transition-delay: 0.22s;
+  }
+
+  /* State: OUT — curtain exits to the right */
+  #transition-overlay.state-out .t-curtain {
+    transform: translateX(101%);
+    transition: transform 0.56s var(--ease-expo);
+  }
+  #transition-overlay.state-out .t-center  {
+    opacity: 0;
+    transform: scale(1.06);
+    transition-delay: 0s;
+  }
+
+  /* ══════════════════
+     LOGIN PAGE
+  ══════════════════ */
   #login-page {
     display: flex;
     min-height: 100vh;
     min-height: 100dvh;
   }
 
+  /* Left brand panel */
   .login-brand {
     width: 45%;
     background: linear-gradient(145deg, #0d0dcc 0%, #1a1aff 40%, #3a0ca3 100%);
@@ -62,15 +140,17 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: max(40px, calc(env(safe-area-inset-top, 0px) + 24px)) max(32px, calc(env(safe-area-inset-left, 0px) + 20px)) max(40px, calc(env(safe-area-inset-bottom, 0px) + 16px)) max(32px, calc(env(safe-area-inset-right, 0px) + 20px));
+    padding: max(40px, calc(env(safe-area-inset-top, 0px) + 24px))
+             max(32px, calc(env(safe-area-inset-right, 0px) + 20px))
+             max(40px, calc(env(safe-area-inset-bottom, 0px) + 16px))
+             max(32px, calc(env(safe-area-inset-left, 0px) + 20px));
     position: relative;
     overflow: hidden;
   }
 
   .login-brand::before {
     content: '';
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: radial-gradient(ellipse at 60% 40%, rgba(255,255,255,0.08) 0%, transparent 70%),
                 radial-gradient(ellipse at 20% 80%, rgba(124,58,237,0.4) 0%, transparent 60%);
   }
@@ -86,12 +166,9 @@
   }
 
   .brand-inner {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
     gap: clamp(24px, 4vh, 40px);
     padding-bottom: clamp(56px, 10vh, 88px);
   }
@@ -99,12 +176,10 @@
   .brand-logo {
     display: block;
     width: clamp(200px, 32vw, 320px);
-    height: auto;
-    object-fit: contain;
+    height: auto; object-fit: contain;
   }
 
   .brand-tag {
-    font-family: var(--font);
     font-size: clamp(12px, 1.4vw, 14px);
     font-weight: 500;
     letter-spacing: 0.38em;
@@ -113,7 +188,6 @@
   }
 
   .brand-title {
-    font-family: var(--font);
     font-size: clamp(2.5rem, 6.5vw, 3.75rem);
     font-weight: 700;
     color: #fff;
@@ -131,13 +205,11 @@
     text-align: center;
   }
 
+  /* Marquee */
   .crawl-bar {
     position: absolute;
     bottom: clamp(20px, 4vh, 40px);
-    left: 0;
-    right: 0;
-    background: none;
-    backdrop-filter: none;
+    left: 0; right: 0;
     padding: 14px 0;
     overflow: hidden;
     z-index: 3;
@@ -146,95 +218,77 @@
   }
 
   .crawl-track {
-    display: inline-flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    width: max-content;
-    white-space: nowrap;
+    display: inline-flex; flex-wrap: nowrap;
+    width: max-content; white-space: nowrap;
     animation: crawl-marquee 40s linear infinite;
     will-change: transform;
-    backface-visibility: hidden;
     font-size: clamp(18px, 2.5vw, 26px);
-    font-style: normal;
     font-weight: 300;
     color: rgba(255,255,255,0.84);
-    font-family: var(--font);
     letter-spacing: 0.11em;
-    text-transform: none;
-    font-feature-settings: "kern" 1, "liga" 1;
   }
 
-  .crawl-track span {
-    display: block;
-    flex: 0 0 auto;
-    padding-right: 4em;
-  }
+  .crawl-track span { display: block; flex: 0 0 auto; padding-right: 4em; }
 
   @keyframes crawl-marquee {
     from { transform: translate3d(0, 0, 0); }
-    to { transform: translate3d(-50%, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
   }
 
-  /* Login Form */
+  /* Right form panel */
   .login-form-panel {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-top: max(40px, calc(env(safe-area-inset-top, 0px) + 24px));
-    padding-bottom: max(40px, calc(env(safe-area-inset-bottom, 0px) + 24px));
-    padding-left: max(24px, calc(env(safe-area-inset-left, 0px) + 20px));
-    padding-right: max(24px, calc(env(safe-area-inset-right, 0px) + 20px));
+    /* REVISION 3: symmetric padding so nothing feels pulled left */
+    padding: max(48px, calc(env(safe-area-inset-top, 0px) + 32px))
+             max(56px, calc(env(safe-area-inset-right, 0px) + 40px))
+             max(48px, calc(env(safe-area-inset-bottom, 0px) + 32px))
+             max(56px, calc(env(safe-area-inset-left, 0px) + 40px));
     background: #fff;
-  }
-
-  @media (min-width: 769px) {
-    .login-form-panel {
-      padding-left: max(48px, calc(env(safe-area-inset-left, 0px) + 32px));
-      padding-right: max(48px, calc(env(safe-area-inset-right, 0px) + 32px));
-    }
   }
 
   .form-container {
     width: 100%;
-    max-width: 460px;
+    max-width: 400px;
   }
 
+  /* REVISION 2: not italic, regular weight, centered */
   .form-heading {
     font-family: var(--font);
-    font-size: clamp(2.25rem, 5vw, 3.25rem);
-    font-weight: 300;
-    font-style: italic;
+    font-size: clamp(2rem, 4.5vw, 2.75rem);
+    font-weight: 400;
+    font-style: normal;
     color: var(--text-dark);
-    letter-spacing: -0.03em;
-    line-height: 1.08;
-    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    text-align: center;
   }
 
   .form-sub {
-    font-size: clamp(17px, 2vw, 20px);
+    font-size: clamp(14px, 1.6vw, 16px);
     line-height: 1.55;
     color: var(--text-muted);
-    margin-bottom: 40px;
-    max-width: 26em;
+    margin-bottom: 36px;
+    text-align: center;
   }
 
-  .field-group { margin-bottom: 20px; }
+  .field-group { margin-bottom: 18px; }
 
   .field-label {
     display: block;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
-  .input-wrap {
-    position: relative;
-  }
+  .input-wrap { position: relative; }
 
   .input-icon {
     position: absolute;
@@ -247,23 +301,23 @@
   .input-wrap input {
     width: 100%;
     padding: 14px 14px 14px 46px;
-    min-height: 48px;
+    min-height: 52px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-input);
     font-family: var(--font);
-    font-size: 17px;
+    font-size: 16px; /* 16px prevents iOS auto-zoom */
     color: var(--text-dark);
     background: #fafafa;
     outline: none;
     transition: border-color var(--dur-med) var(--ease-smooth),
-      background var(--dur-med) var(--ease-smooth),
-      box-shadow var(--dur-med) var(--ease-smooth);
+                background var(--dur-med) var(--ease-smooth),
+                box-shadow var(--dur-med) var(--ease-smooth);
   }
 
   .input-wrap input:focus {
     border-color: var(--brand-purple);
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.10);
+    box-shadow: 0 0 0 3.5px rgba(124,58,237,0.11);
   }
 
   .toggle-pw {
@@ -272,10 +326,8 @@
     transform: translateY(-50%);
     background: none; border: none;
     cursor: pointer; color: var(--text-light);
-    display: flex; align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 44px; min-height: 44px;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
   }
@@ -283,33 +335,35 @@
   .btn-signin {
     width: 100%;
     padding: 16px;
-    min-height: 48px;
+    min-height: 52px;
     -webkit-tap-highlight-color: transparent;
     background: linear-gradient(135deg, var(--brand-purple) 0%, #5b21b6 100%);
     color: #fff;
     border: none;
     border-radius: var(--radius-input);
     font-family: var(--font);
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 8px;
-    letter-spacing: 0.2px;
+    margin-top: 10px;
+    letter-spacing: 0.01em;
     transition: opacity var(--dur-med) var(--ease-smooth),
-      transform var(--dur-fast) var(--ease-out-soft),
-      box-shadow var(--dur-med) var(--ease-smooth);
+                transform var(--dur-fast) var(--ease-out-soft),
+                box-shadow var(--dur-med) var(--ease-smooth);
     box-shadow: 0 4px 18px rgba(124,58,237,0.35);
   }
 
   .btn-signin:hover {
-    opacity: 0.95;
+    opacity: 0.94;
     transform: translateY(-2px);
     box-shadow: 0 10px 32px rgba(124,58,237,0.42);
   }
 
-  .btn-signin:active {
-    transform: translateY(0);
-    transition-duration: 0.08s;
+  .btn-signin:active { transform: translateY(0); transition-duration: 0.08s; }
+
+  .btn-signin.loading {
+    pointer-events: none;
+    opacity: 0.75;
   }
 
   .error-msg {
@@ -317,23 +371,34 @@
     border: 1px solid #fecaca;
     color: #dc2626;
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 11px 14px;
     font-size: 13px;
-    margin-top: 16px;
+    margin-top: 14px;
     display: none;
   }
 
-  .error-msg.show { display: block; }
+  .error-msg.show {
+    display: block;
+    animation: shake 0.35s ease;
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%     { transform: translateX(-5px); }
+    75%     { transform: translateX(5px); }
+  }
 
   .login-footer {
-    margin-top: 44px;
-    font-size: 14px;
+    margin-top: 40px;
+    font-size: 13px;
     color: var(--text-light);
     text-align: center;
     letter-spacing: 0.04em;
   }
 
-  /* ─── DASHBOARD PAGE ─── */
+  /* ══════════════════
+     DASHBOARD PAGE
+  ══════════════════ */
   #dashboard-page {
     display: none;
     min-height: 100vh;
@@ -344,90 +409,75 @@
   .dash-topbar {
     background: #fff;
     border-bottom: 1px solid var(--border);
-    transition: box-shadow var(--dur-med) var(--ease-smooth);
-    padding: 12px 20px;
-    padding-top: max(12px, env(safe-area-inset-top, 0px));
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    padding: 0 24px;
+    padding-top: max(0px, env(safe-area-inset-top, 0px));
+    padding-left: max(24px, env(safe-area-inset-left, 0px));
+    padding-right: max(24px, env(safe-area-inset-right, 0px));
+    height: 68px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    position: sticky; top: 0; z-index: 100;
   }
 
   .topbar-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-    flex: 1 1 auto;
+    display: flex; align-items: center; gap: 12px;
+    min-width: 0; flex: 1 1 auto;
   }
 
   .topbar-logo-img {
-    height: 44px;
-    width: auto;
-    max-width: 160px;
-    object-fit: contain;
-    display: block;
+    height: 40px; width: auto; max-width: 150px;
+    object-fit: contain; display: block;
   }
 
   .topbar-brand-name {
-    font-family: var(--font);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-dark);
-    letter-spacing: -0.02em;
-    white-space: normal;
-    line-height: 1.2;
+    font-size: 15px; font-weight: 700;
+    color: var(--text-dark); letter-spacing: -0.02em;
   }
 
   .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+  }
+
+  .topbar-user-badge {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 13px; color: var(--text-muted); font-weight: 500;
+  }
+
+  .topbar-user-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34,197,94,0.22);
     flex-shrink: 0;
   }
 
   .btn-logout {
-    padding: 10px 18px;
-    min-height: 44px;
+    padding: 9px 16px; min-height: 40px;
     -webkit-tap-highlight-color: transparent;
     background: transparent;
     border: 1.5px solid var(--border);
     border-radius: 8px;
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-muted);
-    cursor: pointer;
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    color: var(--text-muted); cursor: pointer;
     transition: border-color var(--dur-med) var(--ease-smooth),
-      color var(--dur-med) var(--ease-smooth),
-      background var(--dur-med) var(--ease-smooth),
-      box-shadow var(--dur-med) var(--ease-smooth);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+                color var(--dur-med) var(--ease-smooth),
+                background var(--dur-med) var(--ease-smooth);
+    display: flex; align-items: center; gap: 6px;
   }
 
   .btn-logout:hover {
-    border-color: #dc2626;
-    color: #dc2626;
-    background: #fef2f2;
+    border-color: #dc2626; color: #dc2626; background: #fef2f2;
   }
 
   .dash-body {
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100dvh - 64px);
-    min-height: calc(100vh - 64px);
+    display: flex; flex-direction: column;
+    min-height: calc(100dvh - 68px);
+    min-height: calc(100vh - 68px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  /* Editorial hero + centered tiles */
   .dash-welcome {
     flex-shrink: 0;
     padding: clamp(36px, 6vh, 56px) clamp(28px, 5vw, 64px) clamp(24px, 4vh, 40px);
@@ -435,126 +485,81 @@
     border-bottom: 1px solid var(--border);
     text-align: center;
     max-width: 920px;
-    margin: 0 auto;
-    width: 100%;
+    margin: 0 auto; width: 100%;
   }
 
   .welcome-greeting {
-    font-family: var(--font);
     font-size: clamp(1.75rem, 4.5vw, 2.75rem);
-    font-weight: 300;
+    font-weight: 300; font-style: italic;
     color: var(--text-dark);
     margin: 0 0 8px;
-    letter-spacing: 0.02em;
-    font-style: italic;
-    line-height: 1.15;
+    letter-spacing: 0.02em; line-height: 1.15;
   }
 
   .welcome-name {
-    font-family: var(--font);
     font-size: clamp(2.85rem, 7vw, 4.5rem);
-    font-weight: 700;
+    font-weight: 700; font-style: normal;
     color: var(--text-dark);
-    letter-spacing: -0.04em;
-    line-height: 1.02;
-    margin: 0;
-    font-style: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    letter-spacing: -0.04em; line-height: 1.02;
+    margin: 0; overflow-wrap: anywhere; word-break: break-word;
   }
 
-  .welcome-exclaim {
-    color: var(--brand-purple);
-    font-weight: 300;
-  }
+  .welcome-exclaim { color: var(--brand-purple); font-weight: 300; }
 
   .welcome-role {
-    font-size: 14px;
-    color: var(--brand-purple);
-    margin-top: 20px;
-    padding: 8px 16px;
-    background: #f3f0ff;
-    border-radius: 999px;
-    font-weight: 600;
-    display: inline-block;
+    font-size: 14px; color: var(--brand-purple);
+    margin-top: 20px; padding: 8px 16px;
+    background: #f3f0ff; border-radius: 999px;
+    font-weight: 600; display: inline-block;
   }
 
   .welcome-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 20px 28px;
-    margin-top: 28px;
+    display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: center;
+    gap: 20px 28px; margin-top: 28px;
   }
 
   .welcome-note {
-    font-size: 15px;
-    color: var(--text-muted);
-    line-height: 1.65;
-    max-width: 520px;
-    margin: 0;
+    font-size: 15px; color: var(--text-muted);
+    line-height: 1.65; max-width: 520px; margin: 0;
   }
 
   .welcome-count {
     padding: 14px 22px;
     background: linear-gradient(135deg, #f3f0ff, #ede9fe);
-    border-radius: 14px;
-    text-align: center;
-    min-width: 120px;
+    border-radius: 14px; text-align: center; min-width: 120px;
   }
 
   .welcome-count .count-num {
-    font-family: var(--font);
-    font-size: 36px;
-    font-weight: 700;
+    font-size: 36px; font-weight: 700;
     color: var(--brand-purple);
-    letter-spacing: -0.02em;
-    line-height: 1;
+    letter-spacing: -0.02em; line-height: 1;
   }
 
   .welcome-count .count-label {
-    font-size: 13px;
-    color: #7c6caa;
-    font-weight: 600;
-    margin-top: 6px;
+    font-size: 13px; color: #7c6caa;
+    font-weight: 600; margin-top: 6px;
   }
 
   .dash-tiles-panel {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     padding: 32px clamp(16px, 4vw, 48px) max(32px, env(safe-area-inset-bottom, 0px));
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
   }
 
-  .tiles-inner {
-    width: 100%;
-    max-width: 980px;
-  }
+  .tiles-inner { width: 100%; max-width: 980px; }
 
-  .tiles-header {
-    margin-bottom: 26px;
-    text-align: center;
-  }
+  .tiles-header { margin-bottom: 26px; text-align: center; }
 
   .tiles-title {
-    font-family: var(--font);
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 22px; font-weight: 700;
     color: var(--text-dark);
-    letter-spacing: -0.02em;
-    margin-bottom: 6px;
+    letter-spacing: -0.02em; margin-bottom: 6px;
   }
 
-  .tiles-subtitle {
-    font-size: 15px;
-    line-height: 1.5;
-    color: var(--text-muted);
-  }
+  .tiles-subtitle { font-size: 15px; line-height: 1.5; color: var(--text-muted); }
 
   .tiles-grid {
     display: grid;
@@ -567,28 +572,21 @@
     border: 1.5px solid #ede9fe;
     border-radius: var(--radius-tile);
     padding: clamp(20px, 3vw, 26px) clamp(18px, 3vw, 22px) clamp(18px, 3vw, 22px);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
+    display: flex; flex-direction: column;
+    align-items: flex-start; gap: 12px;
+    cursor: pointer; text-decoration: none; color: inherit;
     transition: transform var(--dur-med) var(--ease-out-soft),
-      box-shadow var(--dur-med) var(--ease-smooth),
-      border-color var(--dur-med) var(--ease-smooth);
+                box-shadow var(--dur-med) var(--ease-smooth),
+                border-color var(--dur-med) var(--ease-smooth);
     box-shadow: var(--tile-shadow);
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
     min-height: 140px;
     -webkit-tap-highlight-color: transparent;
   }
 
   .app-tile::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, var(--brand-purple), var(--brand-purple-light));
     border-radius: 20px 20px 0 0;
     opacity: 0;
@@ -596,153 +594,152 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .app-tile:hover {
-      transform: translate3d(0, -4px, 0);
-      box-shadow: var(--tile-hover-shadow);
-      border-color: #c4b5fd;
-    }
-
+    .app-tile:hover { transform: translate3d(0,-4px,0); box-shadow: var(--tile-hover-shadow); border-color: #c4b5fd; }
     .app-tile:hover::before { opacity: 1; }
   }
 
   @media (hover: none) {
-    .app-tile:active {
-      transform: scale(0.985);
-      border-color: #c4b5fd;
-    }
-
+    .app-tile:active { transform: scale(0.985); border-color: #c4b5fd; }
     .app-tile:active::before { opacity: 1; }
   }
 
   .tile-icon {
-    width: 46px; height: 46px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 21px;
-    flex-shrink: 0;
+    width: 46px; height: 46px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 21px; flex-shrink: 0;
   }
 
-  .tile-name {
-    font-family: var(--font);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-dark);
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-  }
+  .tile-name { font-size: 16px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.02em; line-height: 1.25; }
+  .tile-desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-top: 2px; }
+  .tile-arrow { margin-top: auto; font-size: 11px; color: var(--brand-purple); font-weight: 600; display: flex; align-items: center; gap: 4px; letter-spacing: 0.3px; }
 
-  .tile-desc {
-    font-size: 14px;
-    color: var(--text-muted);
-    line-height: 1.5;
-    margin-top: 2px;
-  }
-
-  .tile-arrow {
-    margin-top: auto;
-    font-size: 11px;
-    color: var(--brand-purple);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    letter-spacing: 0.3px;
-  }
-
-  /* Tile color variants */
-  .tile-icon.violet { background: #f3f0ff; color: #7c3aed; }
-  .tile-icon.blue { background: #eff6ff; color: #2563eb; }
-  .tile-icon.green { background: #f0fdf4; color: #16a34a; }
-  .tile-icon.amber { background: #fffbeb; color: #d97706; }
-  .tile-icon.rose { background: #fff1f2; color: #e11d48; }
-  .tile-icon.cyan { background: #ecfeff; color: #0891b2; }
-  .tile-icon.indigo { background: #eef2ff; color: #4338ca; }
+  .tile-icon.violet  { background: #f3f0ff; color: #7c3aed; }
+  .tile-icon.blue    { background: #eff6ff; color: #2563eb; }
+  .tile-icon.green   { background: #f0fdf4; color: #16a34a; }
+  .tile-icon.amber   { background: #fffbeb; color: #d97706; }
+  .tile-icon.rose    { background: #fff1f2; color: #e11d48; }
+  .tile-icon.cyan    { background: #ecfeff; color: #0891b2; }
+  .tile-icon.indigo  { background: #eef2ff; color: #4338ca; }
   .tile-icon.fuchsia { background: #fdf4ff; color: #a21caf; }
 
-  /* ─── ANIMATIONS ─── */
+  /* Animations */
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translate3d(0, 16px, 0); }
-    to { opacity: 1; transform: translate3d(0, 0, 0); }
+    from { opacity: 0; transform: translate3d(0, 18px, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
 
-  .fade-in { animation: fadeInUp 0.65s var(--ease-out-soft) both; }
-  .delay-1 { animation-delay: 0.05s; }
-  .delay-2 { animation-delay: 0.10s; }
-  .delay-3 { animation-delay: 0.15s; }
-  .delay-4 { animation-delay: 0.20s; }
-  .delay-5 { animation-delay: 0.25s; }
-  .delay-6 { animation-delay: 0.30s; }
-  .delay-7 { animation-delay: 0.35s; }
+  .fade-in  { animation: fadeInUp 0.65s var(--ease-out-soft) both; }
+  .delay-1  { animation-delay: 0.05s; }
+  .delay-2  { animation-delay: 0.10s; }
+  .delay-3  { animation-delay: 0.15s; }
+  .delay-4  { animation-delay: 0.20s; }
+  .delay-5  { animation-delay: 0.25s; }
+  .delay-6  { animation-delay: 0.30s; }
+  .delay-7  { animation-delay: 0.35s; }
 
-  /* ─── Responsive: phones → tablets → laptops ─── */
+  /* ══════════════════════════════════════
+     REVISION 5 — MOBILE (industry standard)
+  ══════════════════════════════════════ */
   @media (max-width: 768px) {
+
+    /* Stack brand above form */
     #login-page { flex-direction: column; }
+
+    /* Compact brand panel — logo + title only, no wasted space */
     .login-brand {
       width: 100%;
-      min-height: auto;
-      padding-top: max(28px, calc(env(safe-area-inset-top, 0px) + 16px));
-      padding-bottom: max(100px, calc(env(safe-area-inset-bottom, 0px) + 72px));
+      padding-top: max(40px, calc(env(safe-area-inset-top, 0px) + 24px));
+      padding-bottom: max(64px, calc(env(safe-area-inset-bottom, 0px) + 48px));
+      padding-left: 24px;
+      padding-right: 24px;
     }
-    .brand-inner { padding-bottom: clamp(40px, 12vh, 72px); gap: 20px; }
-    .brand-logo { width: clamp(160px, 58vw, 260px); }
-    .brand-title { font-size: clamp(2rem, 9vw, 2.75rem); }
-    .crawl-bar { bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
-    .crawl-track { font-size: clamp(14px, 3.8vw, 18px); }
-    .brand-desc {
-      max-width: 100%;
-      padding: 0 12px;
-      font-size: clamp(14px, 3.8vw, 17px);
-      line-height: 1.5;
-    }
+    .brand-inner { gap: 12px; padding-bottom: clamp(32px, 8vh, 52px); }
+    .brand-logo  { width: clamp(100px, 32vw, 160px); }
+    .brand-tag   { font-size: 10px; letter-spacing: 0.3em; }
+    .brand-title { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+    .brand-desc  { font-size: 13.5px; padding: 0 8px; line-height: 1.5; }
+    .crawl-bar   { bottom: max(6px, env(safe-area-inset-bottom, 0px)); }
+    .crawl-track { font-size: clamp(11px, 3vw, 14px); }
+
+    /* Form panel — full width card feel, generous padding */
     .login-form-panel {
-      padding-top: max(28px, calc(env(safe-area-inset-top, 0px) + 16px));
-      padding-bottom: max(32px, calc(env(safe-area-inset-bottom, 0px) + 24px));
-      padding-left: max(20px, calc(env(safe-area-inset-left, 0px) + 16px));
-      padding-right: max(20px, calc(env(safe-area-inset-right, 0px) + 16px));
+      flex: 1;
+      justify-content: flex-start;
+      padding: 40px 28px max(48px, calc(env(safe-area-inset-bottom, 0px) + 32px));
     }
-    .dash-welcome { padding: 24px 16px 20px; }
+    .form-container { max-width: 100%; }
+    .form-heading   { font-size: clamp(1.8rem, 7.5vw, 2.25rem); }
+    .form-sub       { font-size: 14px; margin-bottom: 28px; }
+    /* Already 16px globally — prevents iOS zoom */
+    .input-wrap input { min-height: 54px; }
+    .btn-signin       { min-height: 56px; font-size: 17px; border-radius: 14px; margin-top: 14px; }
+    .login-footer     { margin-top: 32px; font-size: 12px; }
+
+    /* Dashboard mobile */
+    .dash-topbar {
+      height: auto; padding: 12px 16px;
+      padding-top: max(12px, env(safe-area-inset-top, 0px));
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    .topbar-logo-img    { height: 36px; max-width: 120px; }
+    .topbar-brand-name  { font-size: 13px; }
+    .topbar-user-badge  { display: none; }
+
+    .dash-welcome { padding: 24px 18px 20px; }
     .welcome-meta { flex-direction: column; gap: 16px; }
     .welcome-count { width: 100%; max-width: 280px; }
-    .dash-tiles-panel { padding: 20px 16px max(24px, calc(env(safe-area-inset-bottom, 0px) + 8px)); justify-content: flex-start; }
-    .dash-topbar { padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
-    .topbar-logo-img { height: 38px; max-width: 140px; }
-    .topbar-brand-name { font-size: 14px; }
+    .dash-tiles-panel {
+      padding: 20px 14px max(24px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+      justify-content: flex-start;
+    }
+    .dash-body {
+      min-height: calc(100dvh - 60px);
+      min-height: calc(100vh - 60px);
+    }
   }
 
   @media (min-width: 769px) and (max-width: 1199px) {
     .login-brand { padding-left: 28px; padding-right: 28px; }
-    .tiles-grid {
-      grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+    .tiles-grid  { grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); }
+    .dash-topbar {
+      padding-left: max(24px, calc(env(safe-area-inset-left, 0px) + 8px));
+      padding-right: max(24px, calc(env(safe-area-inset-right, 0px) + 8px));
     }
-    .dash-topbar { padding-left: max(24px, calc(env(safe-area-inset-left, 0px) + 8px)); padding-right: max(24px, calc(env(safe-area-inset-right, 0px) + 8px)); }
   }
 
   @media (min-width: 1200px) {
     .tiles-inner { max-width: 1040px; }
-    .tiles-grid {
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    }
+    .tiles-grid  { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .crawl-track {
-      animation: crawl-marquee 120s linear infinite;
-    }
-    .fade-in { animation: none; opacity: 1; transform: none; }
-    .app-tile {
-      transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
-    }
+    .crawl-track { animation: crawl-marquee 120s linear infinite; }
+    .fade-in     { animation: none; opacity: 1; transform: none; }
+    .app-tile    { transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease; }
+    .t-curtain   { transition-duration: 0.01s; }
   }
 </style>
 </head>
 <body>
 
-<!-- ══════════ LOGIN PAGE ══════════ -->
+<!-- ══════════════════════════════════════
+     PAGE TRANSITION OVERLAY
+══════════════════════════════════════ -->
+<div id="transition-overlay">
+  <div class="t-curtain"></div>
+  <div class="t-center">
+    <div class="t-brand-name">QDC Dashboard</div>
+    <div class="t-spinner"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     LOGIN PAGE
+══════════════════════════════════════ -->
 <div id="login-page">
 
-  <!-- Brand Panel -->
+  <!-- Brand Panel (left) -->
   <div class="login-brand">
     <div class="brand-inner">
       <img class="brand-logo" src="qc-logo.png" alt="Qualicheck Diagnostic Clinic" width="320" height="120" decoding="async" />
@@ -763,7 +760,7 @@
     </div>
   </div>
 
-  <!-- Form Panel -->
+  <!-- Form Panel (right) -->
   <div class="login-form-panel">
     <div class="form-container">
       <h1 class="form-heading">Welcome back</h1>
@@ -786,7 +783,7 @@
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
           <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
-          <button class="toggle-pw" onclick="togglePw()" type="button" tabindex="-1">
+          <button class="toggle-pw" onclick="togglePw()" type="button" tabindex="-1" aria-label="Show or hide password">
             <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
             </svg>
@@ -794,7 +791,7 @@
         </div>
       </div>
 
-      <button class="btn-signin" onclick="handleLogin()">Sign In</button>
+      <button class="btn-signin" id="btn-signin" onclick="handleLogin()">Sign In</button>
       <div class="error-msg" id="error-msg">Incorrect username or password. Please try again.</div>
 
       <p class="login-footer">QDC · Qualicheck Diagnostic Clinic &nbsp;·&nbsp; LIS Phase 1</p>
@@ -802,7 +799,9 @@
   </div>
 </div>
 
-<!-- ══════════ DASHBOARD PAGE ══════════ -->
+<!-- ══════════════════════════════════════
+     DASHBOARD PAGE
+══════════════════════════════════════ -->
 <div id="dashboard-page">
 
   <!-- Top Bar -->
@@ -812,8 +811,12 @@
       <div class="topbar-brand-name">QDC Dashboard</div>
     </div>
     <div class="topbar-right">
+      <div class="topbar-user-badge">
+        <div class="topbar-user-dot"></div>
+        <span id="topbar-user-name">—</span>
+      </div>
       <button class="btn-logout" onclick="handleLogout()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
         </svg>
         Sign Out
@@ -824,7 +827,7 @@
   <!-- Body -->
   <div class="dash-body">
 
-    <!-- Welcome -->
+    <!-- Welcome Hero -->
     <div class="dash-welcome" id="welcome-panel">
       <p class="welcome-greeting">Welcome</p>
       <h2 class="welcome-name" id="welcome-name">—</h2>
@@ -838,7 +841,7 @@
       </div>
     </div>
 
-    <!-- Tiles -->
+    <!-- App Tiles -->
     <div class="dash-tiles-panel">
       <div class="tiles-inner">
         <div class="tiles-header">
@@ -853,42 +856,35 @@
 </div>
 
 <script>
-// ─── USER DATA ───────────────────────────────────────────────────
-const USERS = [
+// ════════════════════════════════════════════════════════════════
+//  REVISION 4 — GOOGLE APPS SCRIPT INTEGRATION
+//
+//  SETUP STEPS:
+//  1. Create your Google Sheet (see QDC_UserManager.gs for exact structure)
+//  2. In the sheet: Extensions → Apps Script → paste QDC_UserManager.gs
+//  3. Deploy → New deployment → Web app
+//       Execute as: Me   |   Who has access: Anyone
+//  4. Copy the Web App URL and paste it below as GAS_USERS_URL
+//
+//  When the URL is set, user/password/role/app data comes live from
+//  the sheet — just edit the sheet to add, remove, or update anyone.
+//  When URL is blank or unreachable, FALLBACK_USERS is used instead.
+// ════════════════════════════════════════════════════════════════
+
+const GAS_USERS_URL = ''; // ← paste your deployed Web App URL here
+
+// ─── FALLBACK (used when GAS is not yet configured) ──────────────
+const FALLBACK_USERS = [
   {
     name: "Nhia Capili",
     role: "QDC Bookkeeper",
     username: "qlck.intakeunit@gmail.com",
     password: "nhiabookkepper@qdc2026",
     apps: [
-      {
-        name: "QDC Front",
-        desc: "Patient registration portal for intake unit",
-        url: "https://qlckintakeunit-dev.github.io/patient-registration-portal-webapp/",
-        icon: "🏥",
-        color: "violet"
-      },
-      {
-        name: "Expenses Portal",
-        desc: "Log and track operational expenses",
-        url: "https://qualichecktech.github.io/expensesportal/",
-        icon: "💳",
-        color: "amber"
-      },
-      {
-        name: "Daily Registration",
-        desc: "2026 daily patient registration sheet",
-        url: "https://docs.google.com/spreadsheets/d/10vx1OqNuKOKZjT4161JS_3TOb2HOaEHMZDCofoomtVM/edit?usp=sharing",
-        icon: "📋",
-        color: "blue"
-      },
-      {
-        name: "QDC Lab View",
-        desc: "Laboratory results viewer and monitor",
-        url: "https://qualichecktech.github.io/qdclabview/",
-        icon: "🔬",
-        color: "green"
-      }
+      { name: "QDC Front",          desc: "Patient registration portal for intake unit",   url: "https://qlckintakeunit-dev.github.io/patient-registration-portal-webapp/",                                 icon: "🏥", color: "violet" },
+      { name: "Expenses Portal",    desc: "Log and track operational expenses",             url: "https://qualichecktech.github.io/expensesportal/",                                                         icon: "💳", color: "amber"  },
+      { name: "Daily Registration", desc: "2026 daily patient registration sheet",         url: "https://docs.google.com/spreadsheets/d/10vx1OqNuKOKZjT4161JS_3TOb2HOaEHMZDCofoomtVM/edit?usp=sharing",   icon: "📋", color: "blue"   },
+      { name: "QDC Lab View",       desc: "Laboratory results viewer and monitor",         url: "https://qualichecktech.github.io/qdclabview/",                                                             icon: "🔬", color: "green"  }
     ]
   },
   {
@@ -897,13 +893,7 @@ const USERS = [
     username: "qualicheckqdc@gmail.com",
     password: "lab@qdc2026",
     apps: [
-      {
-        name: "QDC Lab View",
-        desc: "Laboratory results viewer and monitor",
-        url: "https://qualichecktech.github.io/qdclabview/",
-        icon: "🔬",
-        color: "green"
-      }
+      { name: "QDC Lab View", desc: "Laboratory results viewer and monitor", url: "https://qualichecktech.github.io/qdclabview/", icon: "🔬", color: "green" }
     ]
   },
   {
@@ -912,76 +902,82 @@ const USERS = [
     username: "qlck.admin.core@gmail.com",
     password: "ruthjavier_admin@qdc2026",
     apps: [
-      {
-        name: "QDC Front",
-        desc: "Patient registration portal for intake unit",
-        url: "https://qlckintakeunit-dev.github.io/patient-registration-portal-webapp/",
-        icon: "🏥",
-        color: "violet"
-      },
-      {
-        name: "Expenses Portal",
-        desc: "Log and track operational expenses",
-        url: "https://qualichecktech.github.io/expensesportal/",
-        icon: "💳",
-        color: "amber"
-      },
-      {
-        name: "Daily Registration",
-        desc: "2026 daily patient registration sheet",
-        url: "https://docs.google.com/spreadsheets/d/10vx1OqNuKOKZjT4161JS_3TOb2HOaEHMZDCofoomtVM/edit?usp=sharing",
-        icon: "📋",
-        color: "blue"
-      },
-      {
-        name: "QDC Lab View",
-        desc: "Laboratory results viewer and monitor",
-        url: "https://qualichecktech.github.io/qdclabview/",
-        icon: "🔬",
-        color: "green"
-      },
-      {
-        name: "2026 Expenses",
-        desc: "Qualicheck full expenses tracker for 2026",
-        url: "https://docs.google.com/spreadsheets/d/1Dn4kHzqr3BnYMuceNgpGIF9dCe762H-CUoDI-FJrx-4/edit?gid=1514407380#gid=1514407380",
-        icon: "📊",
-        color: "indigo"
-      },
-      {
-        name: "Rebates Quick Link",
-        desc: "UTZ rebates and quick links spreadsheet",
-        url: "https://docs.google.com/spreadsheets/d/14ASIvXvYrzxDiprLYJJJjvJdSsYGtgs5lYBAF7RBctw/edit?usp=sharing",
-        icon: "🔗",
-        color: "cyan"
-      },
-      {
-        name: "UTZ Rebates",
-        desc: "UTZ rebates alternate quick reference",
-        url: "https://docs.google.com/spreadsheets/d/1pkBAyOafFpoqKCFHLkVRvagRcb_JIqPBmTsqSK5C-Zc/edit?usp=sharing",
-        icon: "💰",
-        color: "rose"
-      },
-      {
-        name: "Financial Reports",
-        desc: "QDC financial report folder — Google Drive",
-        url: "https://drive.google.com/drive/folders/1S7UJXGPfjkAgSfcRrroJtTEk8u0uFI3W?usp=sharing",
-        icon: "📁",
-        color: "fuchsia"
-      }
+      { name: "QDC Front",          desc: "Patient registration portal for intake unit",   url: "https://qlckintakeunit-dev.github.io/patient-registration-portal-webapp/",                                                   icon: "🏥", color: "violet"  },
+      { name: "Expenses Portal",    desc: "Log and track operational expenses",             url: "https://qualichecktech.github.io/expensesportal/",                                                                           icon: "💳", color: "amber"   },
+      { name: "Daily Registration", desc: "2026 daily patient registration sheet",         url: "https://docs.google.com/spreadsheets/d/10vx1OqNuKOKZjT4161JS_3TOb2HOaEHMZDCofoomtVM/edit?usp=sharing",                     icon: "📋", color: "blue"    },
+      { name: "QDC Lab View",       desc: "Laboratory results viewer and monitor",         url: "https://qualichecktech.github.io/qdclabview/",                                                                               icon: "🔬", color: "green"   },
+      { name: "2026 Expenses",      desc: "Qualicheck full expenses tracker for 2026",     url: "https://docs.google.com/spreadsheets/d/1Dn4kHzqr3BnYMuceNgpGIF9dCe762H-CUoDI-FJrx-4/edit?gid=1514407380#gid=1514407380", icon: "📊", color: "indigo"  },
+      { name: "Rebates Quick Link", desc: "UTZ rebates and quick links spreadsheet",       url: "https://docs.google.com/spreadsheets/d/14ASIvXvYrzxDiprLYJJJjvJdSsYGtgs5lYBAF7RBctw/edit?usp=sharing",                    icon: "🔗", color: "cyan"    },
+      { name: "UTZ Rebates",        desc: "UTZ rebates alternate quick reference",         url: "https://docs.google.com/spreadsheets/d/1pkBAyOafFpoqKCFHLkVRvagRcb_JIqPBmTsqSK5C-Zc/edit?usp=sharing",                   icon: "💰", color: "rose"    },
+      { name: "Financial Reports",  desc: "QDC financial report folder — Google Drive",   url: "https://drive.google.com/drive/folders/1S7UJXGPfjkAgSfcRrroJtTEk8u0uFI3W?usp=sharing",                                    icon: "📁", color: "fuchsia" }
     ]
   }
 ];
 
-// ─── LOGIC ───────────────────────────────────────────────────────
+// ─── RUNTIME ─────────────────────────────────────────────────────
+let USERS = [];
 let currentUser = null;
 
-function handleLogin() {
-  const un = document.getElementById('username').value.trim();
-  const pw = document.getElementById('password').value.trim();
+async function loadUsers() {
+  if (!GAS_USERS_URL) {
+    USERS = FALLBACK_USERS;
+    return;
+  }
+  try {
+    const res = await fetch(GAS_USERS_URL + '?action=getUsers', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (Array.isArray(data.users) && data.users.length > 0) {
+      USERS = data.users;
+    } else {
+      throw new Error('Empty user list');
+    }
+  } catch (e) {
+    console.warn('[QDC] Using fallback users —', e.message);
+    USERS = FALLBACK_USERS;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  REVISION 1 — SMOOTH PAGE TRANSITION
+// ════════════════════════════════════════════════════════════════
+const overlay = document.getElementById('transition-overlay');
+
+function runTransition(switchFn) {
+  // Step 1: brand curtain sweeps IN (left → center)
+  overlay.style.pointerEvents = 'all';
+  overlay.classList.remove('state-out');
+  overlay.classList.add('state-in');
+
+  setTimeout(() => {
+    // Step 2: swap page content while screen is fully covered
+    switchFn();
+
+    // Step 3: curtain sweeps OUT (center → right)
+    overlay.classList.remove('state-in');
+    overlay.classList.add('state-out');
+
+    setTimeout(() => {
+      overlay.classList.remove('state-out');
+      overlay.style.pointerEvents = 'none';
+    }, 680);
+
+  }, 540); // enough time for curtain to fully cover the screen
+}
+
+// ─── LOGIN ───────────────────────────────────────────────────────
+async function handleLogin() {
+  const un  = document.getElementById('username').value.trim();
+  const pw  = document.getElementById('password').value.trim();
   const err = document.getElementById('error-msg');
+  const btn = document.getElementById('btn-signin');
 
   const match = USERS.find(u => u.username === un && u.password === pw);
+
   if (!match) {
+    // Replay shake animation on every failed attempt
+    err.classList.remove('show');
+    void err.offsetWidth; // force reflow
     err.classList.add('show');
     document.getElementById('password').value = '';
     return;
@@ -989,23 +985,42 @@ function handleLogin() {
 
   err.classList.remove('show');
   currentUser = match;
-  showDashboard(match);
+
+  btn.textContent = 'Signing in…';
+  btn.classList.add('loading');
+
+  runTransition(() => {
+    populateDashboard(match);
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('dashboard-page').style.display = 'block';
+    btn.textContent = 'Sign In';
+    btn.classList.remove('loading');
+  });
 }
 
-function showDashboard(user) {
-  document.getElementById('login-page').style.display = 'none';
-  const dash = document.getElementById('dashboard-page');
-  dash.style.display = 'block';
+// ─── LOGOUT ──────────────────────────────────────────────────────
+function handleLogout() {
+  runTransition(() => {
+    currentUser = null;
+    document.getElementById('dashboard-page').style.display = 'none';
+    document.getElementById('login-page').style.display = 'flex';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('error-msg').classList.remove('show');
+    document.getElementById('tiles-grid').innerHTML = '';
+  });
+}
 
-  // Welcome text
+// ─── POPULATE DASHBOARD ──────────────────────────────────────────
+function populateDashboard(user) {
   document.getElementById('welcome-name').innerHTML =
     `${user.name}<span class="welcome-exclaim"> !</span>`;
   document.getElementById('welcome-role').textContent = user.role;
   document.getElementById('app-count').textContent = user.apps.length;
   document.getElementById('tiles-subtitle').textContent =
     `${user.apps.length} application${user.apps.length !== 1 ? 's' : ''} available for your role`;
+  document.getElementById('topbar-user-name').textContent = user.name;
 
-  // Render tiles
   const grid = document.getElementById('tiles-grid');
   grid.innerHTML = '';
   user.apps.forEach((app, i) => {
@@ -1027,27 +1042,21 @@ function showDashboard(user) {
   });
 }
 
-function handleLogout() {
-  currentUser = null;
-  document.getElementById('dashboard-page').style.display = 'none';
-  document.getElementById('login-page').style.display = 'flex';
-  document.getElementById('username').value = '';
-  document.getElementById('password').value = '';
-  document.getElementById('error-msg').classList.remove('show');
-  document.getElementById('tiles-grid').innerHTML = '';
-}
-
+// ─── TOGGLE PASSWORD VISIBILITY ──────────────────────────────────
 function togglePw() {
   const inp = document.getElementById('password');
   inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
-// Enter key support
+// ─── ENTER KEY ───────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') {
     handleLogin();
   }
 });
+
+// ─── INIT ────────────────────────────────────────────────────────
+loadUsers();
 </script>
 </body>
 </html>
