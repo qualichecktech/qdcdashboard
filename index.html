@@ -1263,6 +1263,14 @@
      — Tiles are a single scrollable list
   ══════════════════════════════════════ */
     @media (max-width: 767px) {
+      .mobile-user-row {
+        display: flex;
+      }
+
+      .dash-welcome .welcome-inner {
+        margin: 0 auto;
+        text-align: center;
+      }
 
       /* ─── LOGIN: full-bleed splash header + white form card ─── */
       #login-page {
@@ -1444,7 +1452,7 @@
 
       /* Mobile-specific user info row injected in welcome */
       .mobile-user-row {
-        display: flex;
+        display: none;
         align-items: center;
         gap: 10px;
         margin-bottom: 16px;
@@ -1929,18 +1937,21 @@
       // Mobile-only: user identity row inside welcome panel
       const existingRow = document.getElementById('mobile-user-row');
       if (existingRow) existingRow.remove();
-      const mobileRow = document.createElement('div');
-      mobileRow.id = 'mobile-user-row';
-      mobileRow.className = 'mobile-user-row';
-      mobileRow.innerHTML = `
+
+      if (window.matchMedia('(max-width: 767px)').matches) {
+        const mobileRow = document.createElement('div');
+        mobileRow.id = 'mobile-user-row';
+        mobileRow.className = 'mobile-user-row';
+        mobileRow.innerHTML = `
     <div class="mobile-user-avatar">${getInitials(user.name)}</div>
     <div class="mobile-user-info">
       <div class="mobile-user-name">${user.name}</div>
       <div class="mobile-user-role">${user.role}</div>
     </div>
   `;
-      const welcomeInner = document.getElementById('welcome-panel').querySelector('.welcome-inner');
-      welcomeInner.insertBefore(mobileRow, welcomeInner.firstChild);
+        const welcomeInner = document.getElementById('welcome-panel').querySelector('.welcome-inner');
+        welcomeInner.insertBefore(mobileRow, welcomeInner.firstChild);
+      }
 
       const grid = document.getElementById('tiles-grid');
       grid.innerHTML = '';
